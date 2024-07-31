@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:io';
+import 'dart:ui';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:html2md/html2md.dart' as html2md;
 import 'dart:developer' as developer;
@@ -14,7 +16,6 @@ class MacOSWebViewManager extends WebViewManager {
   Future<void> initialize() async {
     developer.log("Initializing macOS WebView");
     _headlessWebView = HeadlessInAppWebView(
-      initialSettings: InAppWebViewSettings(isInspectable: true),
       onWebViewCreated: (controller) {
         developer.log("Webview created!");
         _webViewController = controller;
@@ -28,16 +29,16 @@ class MacOSWebViewManager extends WebViewManager {
   }
 
   @override
-  Future<Map<String, String>> crawl(String url) async {
+  Future<Map<String, dynamic>> crawl(String url, {Size? screenshotSize}) async {
+    if (screenshotSize != null) await _headlessWebView?.setSize(screenshotSize);
     await _loadUrlAndWait(url);
     final result = await _webViewController.evaluateJavascript(
         source: 'document.documentElement.outerHTML');
-    String html = result?.toString() ?? '';
-    String markdown = _convertHtmlToMarkdown(html);
-    return {
-      'html': html,
-      'markdown': markdown,
-    };
+    final html = result?.toString() ?? '';
+    final markdown = _convertHtmlToMarkdown(html);
+    final screenshot = await _webViewController.takeScreenshot();
+
+    return {'html': html, 'markdown': markdown, 'screenshot': screenshot};
   }
 
   Future<void> _loadUrlAndWait(String url) async {

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:webview_windows/webview_windows.dart' as windows_webview;
 import 'package:html2md/html2md.dart' as html2md;
 import 'dart:developer' as developer;
@@ -16,7 +17,7 @@ class WindowsWebViewManager extends WebViewManager {
   }
 
   @override
-  Future<Map<String, String>> crawl(String url) async {
+  Future<Map<String, dynamic>> crawl(String url, {Size? screenshotSize}) async {
     await _webViewController.loadUrl(url);
     String html = await _webViewController
         .executeScript('document.documentElement.outerHTML');

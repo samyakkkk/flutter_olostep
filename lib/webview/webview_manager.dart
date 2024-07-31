@@ -1,6 +1,7 @@
 import 'dart:async';
+import 'dart:ui';
 
 abstract class WebViewManager {
   Future<void> initialize();
-  Future<Map<String, String>> crawl(String url);
+  Future<Map<String, dynamic>> crawl(String url, {Size? screenshotSize});
 }
