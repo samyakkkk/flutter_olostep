@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'classes/websocket_manager.dart';
+import 'package:flutter_olostep/webview/macos_webview_manager.dart';
+import 'package:flutter_olostep/webview/webview_manager.dart';
+import 'package:flutter_olostep/webview/windows_webview_manager.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,15 +34,29 @@ class HtmlExtractorWidget extends StatefulWidget {
 }
 
 class HtmlExtractorWidgetState extends State<HtmlExtractorWidget> {
-  final WebSocketManager _webSocketManager = WebSocketManager();
+  late final WebViewManager _webViewManager;
   String? _htmlContent;
   String? _markdownContent;
-  final String _socketMockUrl =
-      'https://en.wikipedia.org/wiki/Wikipedia:How_to_create_a_page'; // socket mock url
+  final String _webUrl = 'https://www.olostep.com'; // socket mock url
 
-  void _mockWebSocketMessage() async {
-    Map<String, String> result =
-        await _webSocketManager.mockWebSocketMessage(_socketMockUrl);
+  @override
+  void initState() {
+    initWebViewManager();
+    super.initState();
+  }
+
+  Future<void> initWebViewManager() async {
+    _webViewManager = Platform.isWindows
+        ? WindowsWebViewManager()
+        : Platform.isMacOS
+            ? MacOSWebViewManager()
+            : throw Exception(
+                'Only Macos and Windows Platforms are supported.');
+    await _webViewManager.initialize();
+  }
+
+  void _crawlWebPage() async {
+    Map<String, String> result = await _webViewManager.crawl(_webUrl);
     setState(() {
       _htmlContent = result['html']!;
       _markdownContent = result['markdown']!;
@@ -53,8 +71,8 @@ class HtmlExtractorWidgetState extends State<HtmlExtractorWidget> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ElevatedButton(
-            onPressed: _mockWebSocketMessage,
-            child: const Text('Mock WebSocket Message'),
+            onPressed: _crawlWebPage,
+            child: const Text('Crawl Webpage'),
           ),
           const SizedBox(height: 16.0),
           if (_htmlContent != null) ...[

@@ -1435,7 +1435,8 @@
 /Users/samyak/Documents/dev_envs/flutter/packages/flutter_tools/lib/src/build_system/targets/icon_tree_shaker.dart
 /Users/samyak/Documents/dev_envs/flutter/packages/flutter_tools/lib/src/build_system/targets/macos.dart
 /Users/samyak/Documents/dev_envs/flutter/packages/flutter_tools/lib/src/build_system/targets/native_assets.dart
-/Users/samyak/Documents/olostep/flutter_olostep/lib/classes/websocket_manager.dart
-/Users/samyak/Documents/olostep/flutter_olostep/lib/classes/webview_manager.dart
 /Users/samyak/Documents/olostep/flutter_olostep/lib/main.dart
+/Users/samyak/Documents/olostep/flutter_olostep/lib/webview/macos_webview_manager.dart
+/Users/samyak/Documents/olostep/flutter_olostep/lib/webview/webview_manager.dart
+/Users/samyak/Documents/olostep/flutter_olostep/lib/webview/windows_webview_manager.dart
 /Users/samyak/Documents/olostep/flutter_olostep/pubspec.yaml
