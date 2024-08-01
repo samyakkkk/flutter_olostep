@@ -2,6 +2,8 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_olostep/scrapper.dart';
+import 'package:flutter_olostep/services/s3_service.dart';
 import 'package:flutter_olostep/webview/macos_webview_manager.dart';
 import 'package:flutter_olostep/webview/webview_manager.dart';
 import 'package:flutter_olostep/webview/windows_webview_manager.dart';
@@ -44,10 +46,12 @@ class HtmlExtractorWidgetState extends State<HtmlExtractorWidget> {
   @override
   void initState() {
     initWebViewManager();
+    scrapper.startScraping();
     super.initState();
   }
 
   Future<void> initWebViewManager() async {
+    final storageService = S3Service();
     _webViewManager = Platform.isWindows
         ? WindowsWebViewManager()
         : Platform.isMacOS
@@ -58,6 +62,7 @@ class HtmlExtractorWidgetState extends State<HtmlExtractorWidget> {
   }
 
   void _crawlWebPage() async {
+    print('Crawling webpage... $_webUrl');
     Map<String, dynamic> result = await _webViewManager.crawl(_webUrl,
         screenshotSize: const Size(1024, 1024));
     setState(() {
@@ -67,6 +72,7 @@ class HtmlExtractorWidgetState extends State<HtmlExtractorWidget> {
     });
   }
 
+  final Scrapper scrapper = Scrapper();
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -78,6 +84,15 @@ class HtmlExtractorWidgetState extends State<HtmlExtractorWidget> {
             child: ElevatedButton(
               onPressed: _crawlWebPage,
               child: const Text('Crawl Webpage'),
+            ),
+          ),
+          const SizedBox(height: 16.0),
+          Center(
+            child: ElevatedButton(
+              onPressed: () {
+                scrapper.sendDemoRequest();
+              },
+              child: const Text('Demo request'),
             ),
           ),
           const SizedBox(height: 16.0),

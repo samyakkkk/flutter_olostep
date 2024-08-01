@@ -17,8 +17,10 @@ class WindowsWebViewManager extends WebViewManager {
   }
 
   @override
-  Future<Map<String, dynamic>> crawl(String url, {Size? screenshotSize}) async {
+  Future<Map<String, dynamic>> crawl(String url,
+      {Size? screenshotSize, int? waitTime}) async {
     await _webViewController.loadUrl(url);
+    await Future.delayed(Duration(milliseconds: waitTime ?? 0));
     String html = await _webViewController
         .executeScript('document.documentElement.outerHTML');
     String markdown = _convertHtmlToMarkdown(html);

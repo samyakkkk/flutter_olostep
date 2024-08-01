@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:flutter_olostep/model/scrape_request.dart';
+import 'package:flutter_olostep/model/scrape_result.dart';
 import 'package:html2md/html2md.dart' as html2md;
 import 'dart:developer' as developer;
 
@@ -29,9 +31,11 @@ class MacOSWebViewManager extends WebViewManager {
   }
 
   @override
-  Future<Map<String, dynamic>> crawl(String url, {Size? screenshotSize}) async {
+  Future<Map<String, dynamic>> crawl(String url,
+      {Size? screenshotSize, int? waitTime}) async {
     if (screenshotSize != null) await _headlessWebView?.setSize(screenshotSize);
     await _loadUrlAndWait(url);
+    await Future.delayed(Duration(milliseconds: waitTime ?? 0));
     final result = await _webViewController.evaluateJavascript(
         source: 'document.documentElement.outerHTML');
     final html = result?.toString() ?? '';
