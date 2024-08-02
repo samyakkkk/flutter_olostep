@@ -8,7 +8,7 @@ class ScrapeRequest {
   ScrapeRequest({
     required this.url,
     required this.waitBeforeScraping,
-      this.htmlVisualizer,
+    this.htmlVisualizer,
     this.windowSize,
     required this.recordID,
   });
@@ -18,8 +18,8 @@ class ScrapeRequest {
     return ScrapeRequest(
       url: json['url'] as String,
       waitBeforeScraping: json['waitBeforeScraping'] as int,
-      htmlVisualizer: json['htmlVisualizer'] as String,
-      windowSize: json['windowSize'] as String,
+      htmlVisualizer: json['htmlVisualizer'] as String?,
+      windowSize: json['windowSize'] as String?,
       recordID: json['recordID'] as String,
     );
   }

@@ -21,7 +21,27 @@ class WindowsWebViewManager extends WebViewManager {
       {Size? screenshotSize, int? waitTime}) async {
     try {
       await _webViewController.loadUrl(url);
+
+      // Inject JavaScript to wait for DOMContentLoaded
+      await _webViewController.executeScript('''
+        document.addEventListener('DOMContentLoaded', function() {
+          window.domContentLoaded = true;
+        });
+        window.domContentLoaded = false;
+      ''');
+
+      // Wait for the DOMContentLoaded event
+      bool domContentLoaded = false;
+      while (!domContentLoaded) {
+        await Future.delayed(const Duration(milliseconds: 100));
+        domContentLoaded = await _webViewController
+                .executeScript('window.domContentLoaded;') ==
+            'true';
+      }
+
       await Future.delayed(Duration(milliseconds: waitTime ?? 0));
+
+      // Now get the HTML content
       String html = await _webViewController
           .executeScript('document.documentElement.outerHTML');
       String markdown = _convertHtmlToMarkdown(html);

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'storage_service.dart';
 
@@ -59,8 +60,7 @@ class S3Service implements StorageService {
   }
 
   @override
-  Future<void> uploadImage(String imageUrlSigned, String base64Image) async {
-    final byteData = base64Decode(base64Image.split(',')[1]);
+  Future<void> uploadImage(String imageUrlSigned, Uint8List base64Image) async {
     final response = await http.put(
       Uri.parse(imageUrlSigned),
       headers: {
@@ -68,7 +68,7 @@ class S3Service implements StorageService {
         'Content-Encoding': 'base64',
         'x-amz-acl': 'public-read',
       },
-      body: byteData,
+      body: base64Image,
     );
 
     if (response.statusCode != 200) {

@@ -1,6 +1,3 @@
-import 'dart:io';
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_olostep/flutter_olostep.dart';
 
@@ -33,40 +30,33 @@ class HtmlExtractorWidget extends StatefulWidget {
 }
 
 class HtmlExtractorWidgetState extends State<HtmlExtractorWidget> {
-  // late final WebViewManager _webViewManager;
-  // String? _htmlContent;
-  // String? _markdownContent;
-  // Uint8List? _imageContent;
-  // final String _webUrl = 'https://www.olostep.com'; // socket mock url
-
   @override
   void initState() {
     // initWebViewManager();
     scrapper.startScraping();
+    scrapper.onScrapingResult = (result) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Scraping result: ${result.recordID}'),
+        ),
+      );
+    };
+    scrapper.onScrapingException = (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Scraping error: ${error.message}'),
+        ),
+      );
+    };
+    scrapper.onStorageException = (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Storage error: $error'),
+        ),
+      );
+    };
     super.initState();
   }
-
-  // Future<void> initWebViewManager() async {
-  //   final storageService = S3Service();
-  //   _webViewManager = Platform.isWindows
-  //       ? WindowsWebViewManager()
-  //       : Platform.isMacOS
-  //           ? MacOSWebViewManager()
-  //           : throw Exception(
-  //               'Only Macos and Windows Platforms are supported.');
-  //   await _webViewManager.initialize();
-  // }
-
-  // void _crawlWebPage() async {
-  //   print('Crawling webpage... $_webUrl');
-  //   Map<String, dynamic> result = await _webViewManager.crawl(_webUrl,
-  //       screenshotSize: const Size(1024, 1024));
-  //   setState(() {
-  //     _htmlContent = result['html']!;
-  //     _markdownContent = result['markdown']!;
-  //     _imageContent = result['screenshot'];
-  //   });
-  // }
 
   final Olostep scrapper = Olostep("123");
   @override
@@ -92,25 +82,6 @@ class HtmlExtractorWidgetState extends State<HtmlExtractorWidget> {
             ),
           ),
           const SizedBox(height: 16.0),
-          // if (_imageContent != null) ...[
-          //   const Text('Image:', style: TextStyle(fontWeight: FontWeight.bold)),
-          //   const SizedBox(height: 8.0),
-          //   Image.memory(_imageContent!),
-          //   const SizedBox(height: 16.0),
-          // ],
-          // if (_htmlContent != null) ...[
-          //   const Text('HTML:', style: TextStyle(fontWeight: FontWeight.bold)),
-          //   const SizedBox(height: 8.0),
-          //   Text(_htmlContent!),
-          //   const SizedBox(height: 16.0),
-          // ],
-          // if (_markdownContent != null) ...[
-          //   const Text('Markdown:',
-          //       style: TextStyle(fontWeight: FontWeight.bold)),
-          //   const SizedBox(height: 8.0),
-          //   Text(_markdownContent!),
-          //   const SizedBox(height: 16.0),
-          // ],
         ],
       ),
     );
