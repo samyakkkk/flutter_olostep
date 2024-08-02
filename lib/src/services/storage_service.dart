@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 abstract class StorageService {
   Future<Map<String, String>> getSignedUrls(String recordID);
@@ -7,5 +8,5 @@ abstract class StorageService {
 
   Future<void> uploadMarkdown(String markdownUrlSigned, String content);
 
-  Future<void> uploadImage(String imageUrlSigned, String base64Image);
+  Future<void> uploadImage(String imageUrlSigned, Uint8List base64Image);
 }

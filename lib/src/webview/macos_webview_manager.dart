@@ -38,7 +38,6 @@ class MacOSWebViewManager extends WebViewManager {
     final html = result?.toString() ?? '';
     final markdown = _convertHtmlToMarkdown(html);
     final screenshot = await _webViewController.takeScreenshot();
-
     return {'html': html, 'markdown': markdown, 'screenshot': screenshot};
   }
 
