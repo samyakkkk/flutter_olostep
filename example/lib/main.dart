@@ -30,35 +30,37 @@ class HtmlExtractorWidget extends StatefulWidget {
 }
 
 class HtmlExtractorWidgetState extends State<HtmlExtractorWidget> {
+  final Olostep olostep = Olostep("123");
+
   @override
   void initState() {
-    // initWebViewManager();
-    scrapper.startScraping();
-    scrapper.onScrapingResult = (result) {
+    // olostep.startCrawling();
+
+    olostep.onScrapingResult = (result) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Scraping result: ${result.recordID}'),
         ),
       );
     };
-    scrapper.onScrapingException = (error) {
+    olostep.onScrapingException = (error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Scraping error: ${error.message}'),
         ),
       );
     };
-    scrapper.onStorageException = (error) {
+    olostep.onStorageException = (error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Storage error: $error'),
         ),
       );
     };
+
     super.initState();
   }
 
-  final Olostep scrapper = Olostep("123");
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -69,11 +71,10 @@ class HtmlExtractorWidgetState extends State<HtmlExtractorWidget> {
           Center(
             child: ElevatedButton(
               onPressed: () {
-                scrapper.sendDemoRequest(
+                olostep.testCrawl(
                   ScrapeRequest(
                     recordID: '005ie7h3w5',
-                    url:
-                        'https://www.revolve.com/free-people-x-we-the-free-ziggy-denim-overal-in-parchment/dp/FREE-WC151/?d=Womens&page=1&lc=1&plpSrc=/r/Brands.jsp?aliasURL%3Ddenim-overalls/br/5aa7c6%26sc%3DOveralls%26s%3Dc%26c%3DDenim%26searchsynonym%3Dcream+overalls%26color%3Dwhite%26filters%3Dcolor%26lazyLoadedPlp%3Dtrue%26sortBy%3Dfeatured&itrownum=1&itcurrpage=1&itview=05',
+                    url: 'https://www.olostep.com/',
                     waitBeforeScraping: 1000,
                   ),
                 );
