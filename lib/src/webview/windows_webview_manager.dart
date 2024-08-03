@@ -20,23 +20,17 @@ class WindowsWebViewManager extends WebViewManager {
   Future<Map<String, dynamic>> crawl(String url,
       {Size? screenshotSize, int? waitTime}) async {
     try {
+      bool domContentLoaded = false;
+      final loadingStateStream = _webViewController!.loadingState;
+      loadingStateStream.listen((loadingState) {
+        if (loadingState == windows_webview.LoadingState.navigationCompleted) {
+          domContentLoaded = true;
+        }
+      });
       await _webViewController!.loadUrl(url);
 
-      // Inject JavaScript to wait for DOMContentLoaded
-      await _webViewController!.executeScript('''
-        document.addEventListener('DOMContentLoaded', function() {
-          window.domContentLoaded = true;
-        });
-        window.domContentLoaded = false;
-      ''');
-
-      // Wait for the DOMContentLoaded event
-      bool domContentLoaded = false;
       while (!domContentLoaded) {
         await Future.delayed(const Duration(milliseconds: 100));
-        domContentLoaded = await _webViewController!
-                .executeScript('window.domContentLoaded;') ==
-            'true';
       }
 
       await Future.delayed(Duration(milliseconds: waitTime ?? 0));
