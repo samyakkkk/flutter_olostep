@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 import 'dart:ui';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:html2md/html2md.dart' as html2md;
@@ -37,7 +38,9 @@ class MacOSWebViewManager extends WebViewManager {
         .evaluateJavascript(source: 'document.documentElement.outerHTML');
     final html = result?.toString() ?? '';
     final markdown = _convertHtmlToMarkdown(html);
-    final screenshot = await _webViewController!.takeScreenshot();
+    Uint8List? screenshot;
+    if (screenshotSize != null)
+      screenshot = await _webViewController!.takeScreenshot();
     return {'html': html, 'markdown': markdown, 'screenshot': screenshot};
   }
 

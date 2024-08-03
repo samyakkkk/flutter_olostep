@@ -5,6 +5,7 @@ import 'package:flutter_olostep/src/exceptions.dart';
 import 'package:flutter_olostep/src/model/scrape_request.dart';
 import 'package:flutter_olostep/src/model/scrape_result.dart';
 import 'package:flutter_olostep/src/scraping_events.dart';
+import 'package:flutter_olostep/src/services/dynamo_service.dart';
 import 'package:flutter_olostep/src/services/s3_service.dart';
 import 'package:flutter_olostep/src/webview/macos_webview_manager.dart';
 import 'package:flutter_olostep/src/webview/webview_manager.dart';
@@ -94,7 +95,9 @@ class FlutterOlostep {
         ScrapeRequest scrapeRequest = ScrapeRequest.fromJson(data);
         ScrapeResult scrapeResult = await _runScrapeRequest(scrapeRequest);
         print(scrapeRequest.toJson());
-        _postScrapeRequest(scrapeResult);
+        final UploadResult uploadResult =
+            await _postScrapeRequest(scrapeResult);
+        await DynamoService().updateDynamo(uploadResult);
       }
     } on ScrapingException catch (e) {
       onScrapingException?.call(e);
@@ -117,7 +120,13 @@ class FlutterOlostep {
     try {
       final waitTime = scrapeRequest.waitBeforeScraping;
       final url = scrapeRequest.url;
-      final result = await _webViewManager.crawl(url, waitTime: waitTime);
+      final result = await _webViewManager.crawl(
+        url,
+        waitTime: waitTime,
+        // TODO: convert windowSize to Size then uncomment below
+        // screenshotSize:
+        //     scrapeRequest.htmlVisualizer == true ?  scrapeRequest.windowSize : null,
+      );
       ScrapeResult scrapeResult = ScrapeResult(
         recordID: scrapeRequest.recordID,
         html: result['html'],
@@ -137,7 +146,7 @@ class FlutterOlostep {
   /// [onScrapingResult] callback.
   ///
   /// [scrapeResult] - The scrape result to be posted.
-  Future<void> _postScrapeRequest(ScrapeResult scrapeResult) async {
+  Future<UploadResult> _postScrapeRequest(ScrapeResult scrapeResult) async {
     try {
       final signedUrl =
           await _storageService.getSignedUrls(scrapeResult.recordID);
@@ -160,7 +169,13 @@ class FlutterOlostep {
 
       await Future.wait(requests);
       onScrapingResult?.call(scrapeResult);
+      UploadResult uploadResult = UploadResult(
+        recordID: scrapeResult.recordID,
+        url: signedUrl['url']!,
+        orgId: '--',
+      );
       print('requests processed');
+      return uploadResult;
     } catch (e) {
       throw StorageException(e);
     }
