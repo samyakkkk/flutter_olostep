@@ -122,6 +122,7 @@ class FlutterOlostep {
         recordID: scrapeRequest.recordID,
         html: result['html'],
         markdown: result['markdown'],
+        screenshot: result['screenshot'],
       );
       return scrapeResult;
     } catch (e) {
@@ -151,7 +152,7 @@ class FlutterOlostep {
       final List<Future> requests = [htmlRequest, markdownRequest];
       if (scrapeResult.screenshot != null) {
         final screenshotRequest = _storageService.uploadImage(
-          signedUrl['uploadURL_screenshot']!,
+          signedUrl['uploadURL_htmlVisualizer']!,
           scrapeResult.screenshot!,
         );
         requests.add(screenshotRequest);
