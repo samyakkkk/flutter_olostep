@@ -11,8 +11,16 @@ import 'package:flutter_olostep/src/webview/webview_manager.dart';
 import 'package:flutter_olostep/src/webview/windows_webview_manager.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-class Olostep {
-  Olostep(
+/// The `FlutterOlostep` class provides methods to manage web scraping tasks
+/// using WebView and WebSocket connections.
+class FlutterOlostep {
+  /// Creates an instance of `FlutterOlostep`.
+  ///
+  /// The [_nodeId] should be a constant specific to the device and is required to identify the node to receieve data from Olostep.
+  ///
+  /// Optional callbacks [onScrapingResult], [onScrapingException], and
+  /// [onStorageException] can be provided to handle respective events.
+  FlutterOlostep(
     this._nodeId, {
     this.onScrapingResult,
     this.onScrapingException,
@@ -36,12 +44,21 @@ class Olostep {
   OnScrapingException? onScrapingException;
   OnStorageException? onStorageException;
 
+  /// Tests the crawling process with a given [request].
+  ///
+  /// This method initializes the WebView, sends the [request] as a message,
+  /// and then disposes of the WebView.
+  ///
+  /// [request] - The scrape request to be tested.
+  ///
+  /// Use any of the recordIDs 004ie7h3w5, 005ie7h3w5, 006ie7h3w5, 007ie7h3w5 with URL and other params of your choice
   Future<void> testCrawl(ScrapeRequest request) async {
     await _webViewManager.initialize();
     await _onMessage(jsonEncode(request.toJson()));
     await _webViewManager.dispose();
   }
 
+  /// Starts the crawling process by establishing a WebSocket connection.
   Future<void> startCrawling() async {
     await _webViewManager.initialize();
     final url =
@@ -53,13 +70,22 @@ class Olostep {
     });
   }
 
+  /// Stops the crawling process by closing the WebSocket connection.
+  ///
+  /// This method closes the WebSocket connection and disposes of the  WebView.
   Future<void> stopCrawling() async {
     await _channel?.sink.close();
     await _webViewManager.dispose();
     _channel = null;
   }
 
-  // Handle incoming messages
+  /// Handles incoming messages from the WebSocket connection.
+  ///
+  /// This method decodes the incoming [message], processes the scrape request,
+  /// and posts the scrape result. Exceptions are handled and passed to the
+  /// respective callbacks.
+  ///
+  /// [message] - The incoming message to be processed.
   Future<void> _onMessage(dynamic message) async {
     try {
       final data = jsonDecode(message);
@@ -79,6 +105,14 @@ class Olostep {
     }
   }
 
+  /// Runs the scrape request using the WebView manager.
+  ///
+  /// This method crawls the URL specified in the [scrapeRequest] and returns
+  /// the scrape result.
+  ///
+  /// [scrapeRequest] - The scrape request to be processed.
+  ///
+  /// Returns a [ScrapeResult] containing the scraped data.
   Future<ScrapeResult> _runScrapeRequest(ScrapeRequest scrapeRequest) async {
     try {
       final waitTime = scrapeRequest.waitBeforeScraping;
@@ -95,6 +129,13 @@ class Olostep {
     }
   }
 
+  /// Posts the scrape result to the storage service.
+  ///
+  /// This method uploads the scraped HTML, markdown, and optionally the
+  /// screenshot to the storage service. The result is then passed to the
+  /// [onScrapingResult] callback.
+  ///
+  /// [scrapeResult] - The scrape result to be posted.
   Future<void> _postScrapeRequest(ScrapeResult scrapeResult) async {
     try {
       final signedUrl =
