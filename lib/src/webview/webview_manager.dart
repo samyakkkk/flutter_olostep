@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'dart:ui';
 
+import 'package:flutter_olostep/flutter_olostep.dart';
+
 abstract class WebViewManager {
   Future<void> initialize();
-  Future<Map<String, dynamic>> crawl(String url,
-      {Size? screenshotSize, int? waitTime});
+  Future<Map<String, dynamic>> crawl(ScrapeRequest request);
   Future<void> dispose();
 }

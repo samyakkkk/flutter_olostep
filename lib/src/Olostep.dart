@@ -95,9 +95,13 @@ class FlutterOlostep {
         ScrapeRequest scrapeRequest = ScrapeRequest.fromJson(data);
         ScrapeResult scrapeResult = await _runScrapeRequest(scrapeRequest);
         print(scrapeRequest.toJson());
-        final UploadResult uploadResult =
-            await _postScrapeRequest(scrapeResult);
-        await DynamoService().updateDynamo(uploadResult);
+        final UploadResult uploadResult = await _postScrapeRequest(scrapeResult,
+            url: scrapeRequest.url,
+            htmlTransformer: scrapeRequest.htmlTransformer);
+        print(uploadResult);
+        await DynamoService.updateDynamo(uploadResult);
+        print('Scrape result posted');
+        onScrapingResult?.call(scrapeResult);
       }
     } on ScrapingException catch (e) {
       onScrapingException?.call(e);
@@ -118,20 +122,13 @@ class FlutterOlostep {
   /// Returns a [ScrapeResult] containing the scraped data.
   Future<ScrapeResult> _runScrapeRequest(ScrapeRequest scrapeRequest) async {
     try {
-      final waitTime = scrapeRequest.waitBeforeScraping;
-      final url = scrapeRequest.url;
-      final result = await _webViewManager.crawl(
-        url,
-        waitTime: waitTime,
-        // TODO: convert windowSize to Size then uncomment below
-        // screenshotSize:
-        //     scrapeRequest.htmlVisualizer == true ?  scrapeRequest.windowSize : null,
-      );
+      final result = await _webViewManager.crawl(scrapeRequest);
       ScrapeResult scrapeResult = ScrapeResult(
         recordID: scrapeRequest.recordID,
         html: result['html'],
         markdown: result['markdown'],
         screenshot: result['screenshot'],
+        orgId: scrapeRequest.orgId,
       );
       return scrapeResult;
     } catch (e) {
@@ -146,19 +143,30 @@ class FlutterOlostep {
   /// [onScrapingResult] callback.
   ///
   /// [scrapeResult] - The scrape result to be posted.
-  Future<UploadResult> _postScrapeRequest(ScrapeResult scrapeResult) async {
+  Future<UploadResult> _postScrapeRequest(
+    ScrapeResult scrapeResult, {
+    required String url,
+    required String htmlTransformer,
+  }) async {
     try {
       final signedUrl =
           await _storageService.getSignedUrls(scrapeResult.recordID);
-      print("signed URLs $signedUrl");
 
-      final htmlRequest = _storageService.uploadHtml(
-          signedUrl['uploadURL_html']!, scrapeResult.html);
-      final markdownRequest = _storageService.uploadMarkdown(
-        signedUrl['uploadURL_markDown']!,
-        scrapeResult.markdown,
-      );
-      final List<Future> requests = [htmlRequest, markdownRequest];
+      final List<Future> requests = [];
+      if (scrapeResult.html != null) {
+        final htmlRequest = _storageService.uploadHtml(
+          signedUrl['uploadURL_html']!,
+          scrapeResult.html!,
+        );
+        requests.add(htmlRequest);
+      }
+      if (scrapeResult.markdown != null) {
+        final markdownRequest = _storageService.uploadMarkdown(
+          signedUrl['uploadURL_markDown']!,
+          scrapeResult.markdown!,
+        );
+        requests.add(markdownRequest);
+      }
       if (scrapeResult.screenshot != null) {
         final screenshotRequest = _storageService.uploadImage(
           signedUrl['uploadURL_htmlVisualizer']!,
@@ -168,11 +176,12 @@ class FlutterOlostep {
       }
 
       await Future.wait(requests);
-      onScrapingResult?.call(scrapeResult);
+      print('requests sent');
       UploadResult uploadResult = UploadResult(
         recordID: scrapeResult.recordID,
-        url: signedUrl['url']!,
-        orgId: '--',
+        url: url,
+        orgId: scrapeResult.orgId,
+        htmlTransformer: htmlTransformer,
       );
       print('requests processed');
       return uploadResult;

@@ -6,11 +6,13 @@ class UploadResult {
   final String recordID;
   final String url;
   final String orgId;
+  final String htmlTransformer;
 
   UploadResult({
     required this.recordID,
     required this.url,
     required this.orgId,
+    this.htmlTransformer = 'none',
   });
 }
 
@@ -18,11 +20,12 @@ class DynamoService {
   static const String baseUrl =
       "https://zuaq4uywadlj75qqkfns3bmoom0xpaiz.lambda-url.us-east-1.on.aws/";
 
-  Future<void> updateDynamo(UploadResult uploadResult) async {
+  static Future<void> updateDynamo(UploadResult uploadResult) async {
     final bodyData = {
       "recordID": uploadResult.recordID,
       "url": uploadResult.url,
       "orgId": uploadResult.orgId,
+      "htmlTransformer": uploadResult.htmlTransformer,
     };
 
     final requestOptions = http.Request("POST", Uri.parse(baseUrl))

@@ -42,8 +42,6 @@ class S3Service implements StorageService {
   @override
   Future<void> uploadHtml(String htmlUrlSigned, String content) async {
     final client = CustomHttpClient(contentType: 'text/html');
-    print('Uploading HTML to $htmlUrlSigned');
-    print('Content: $content');
     final response = await client.put(
       Uri.parse(htmlUrlSigned),
       headers: {
@@ -52,7 +50,6 @@ class S3Service implements StorageService {
       },
       body: content,
     );
-    print(response.statusCode);
     if (response.statusCode != 200) {
       throw Exception('Failed to upload HTML');
     }

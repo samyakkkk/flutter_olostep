@@ -36,7 +36,6 @@ class HtmlExtractorWidgetState extends State<HtmlExtractorWidget> {
   void initState() {
     // TODO: Enable after sucessfull test requests.
     olostep.startCrawling();
- 
 
     olostep.onScrapingResult = (result) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -77,7 +76,12 @@ class HtmlExtractorWidgetState extends State<HtmlExtractorWidget> {
                   ScrapeRequest(
                     recordID: '005ie7h3w5',
                     url: 'https://www.olostep.com/',
-                    waitBeforeScraping: 1000,
+                    waitBeforeScraping: 1,
+                    saveHtml: true,
+                    saveMarkdown: true,
+                    htmlVisualizer: true,
+                    orgId: 'podqi',
+                    htmlTransformer: 'none',
                   ),
                 );
               },
