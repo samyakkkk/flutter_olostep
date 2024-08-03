@@ -30,10 +30,11 @@ class HtmlExtractorWidget extends StatefulWidget {
 }
 
 class HtmlExtractorWidgetState extends State<HtmlExtractorWidget> {
-  final Olostep olostep = Olostep("123");
+  final FlutterOlostep olostep = FlutterOlostep("123");
 
   @override
   void initState() {
+    // TODO: Enable after sucessfull test requests.
     // olostep.startCrawling();
 
     olostep.onScrapingResult = (result) {
