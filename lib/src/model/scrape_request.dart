@@ -1,7 +1,7 @@
 class ScrapeRequest {
   final String url;
   final int waitBeforeScraping;
-  final String? htmlVisualizer;
+  final bool? htmlVisualizer;
   final String? windowSize;
   final String recordID;
 
@@ -18,7 +18,7 @@ class ScrapeRequest {
     return ScrapeRequest(
       url: json['url'] as String,
       waitBeforeScraping: json['waitBeforeScraping'] as int,
-      htmlVisualizer: json['htmlVisualizer'] as String?,
+      htmlVisualizer: json['htmlVisualizer'] as bool?,
       windowSize: json['windowSize'] as String?,
       recordID: json['recordID'] as String,
     );
