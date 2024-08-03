@@ -3,6 +3,20 @@ import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'storage_service.dart';
 
+class CustomHttpClient extends http.BaseClient {
+  final http.Client _inner = http.Client();
+  final String contentType;
+
+  CustomHttpClient({required this.contentType});
+
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) {
+    // Ensure Content-Type is set correctly
+    request.headers['Content-Type'] = contentType;
+    return _inner.send(request);
+  }
+}
+
 class S3Service implements StorageService {
   // TODO: Should come from constants file
   final String _getS3SignedUrlsUrl =
@@ -27,9 +41,10 @@ class S3Service implements StorageService {
 
   @override
   Future<void> uploadHtml(String htmlUrlSigned, String content) async {
+    final client = CustomHttpClient(contentType: 'text/html');
     print('Uploading HTML to $htmlUrlSigned');
     print('Content: $content');
-    final response = await http.put(
+    final response = await client.put(
       Uri.parse(htmlUrlSigned),
       headers: {
         'Content-Type': 'text/html',
@@ -45,7 +60,8 @@ class S3Service implements StorageService {
 
   @override
   Future<void> uploadMarkdown(String markdownUrlSigned, String content) async {
-    final response = await http.put(
+    final client = CustomHttpClient(contentType: 'text/markdown');
+    final response = await client.put(
       Uri.parse(markdownUrlSigned),
       headers: {
         'Content-Type': 'text/markdown',
@@ -61,7 +77,8 @@ class S3Service implements StorageService {
 
   @override
   Future<void> uploadImage(String imageUrlSigned, Uint8List base64Image) async {
-    final response = await http.put(
+    final client = CustomHttpClient(contentType: 'image/png');
+    final response = await client.put(
       Uri.parse(imageUrlSigned),
       headers: {
         'Content-Type': 'image/png',
