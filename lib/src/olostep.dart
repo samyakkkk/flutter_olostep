@@ -159,31 +159,33 @@ class FlutterOlostep {
     try {
       final signedUrl =
           await _storageService.getSignedUrls(scrapeResult.recordID);
-
+      print(signedUrl);
+      print(scrapeResult.html);
       final List<Future> requests = [];
+
       if (scrapeResult.html != null) {
-        final htmlRequest = _storageService.uploadHtml(
+        final htmlRequest = await _storageService.uploadHtml(
           signedUrl['uploadURL_html']!,
           scrapeResult.html!,
         );
-        requests.add(htmlRequest);
+        // requests.add(htmlRequest);
       }
       if (scrapeResult.markdown != null) {
-        final markdownRequest = _storageService.uploadMarkdown(
+        final markdownRequest = await _storageService.uploadMarkdown(
           signedUrl['uploadURL_markDown']!,
           scrapeResult.markdown!,
         );
-        requests.add(markdownRequest);
+        // requests.add(markdownRequest);
       }
       if (scrapeResult.screenshot != null) {
-        final screenshotRequest = _storageService.uploadImage(
+        final screenshotRequest = await _storageService.uploadImage(
           signedUrl['uploadURL_htmlVisualizer']!,
           scrapeResult.screenshot!,
         );
-        requests.add(screenshotRequest);
+        // requests.add(screenshotRequest);
       }
 
-      await Future.wait(requests);
+      // await Future.wait(requests);
       UploadResult uploadResult = UploadResult(
         recordID: scrapeResult.recordID,
         url: url,
