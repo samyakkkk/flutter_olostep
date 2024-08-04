@@ -45,7 +45,9 @@ class MacOSWebViewManager extends WebViewManager {
     if (request.htmlVisualizer ?? false) {
       screenshot = await _webViewController!.takeScreenshot();
     }
-    final finalUrl = _webViewController!.getUrl();
+    final finalUri = await _webViewController!.getUrl();
+    final String? finalUrl = finalUri?.uriValue.toString();
+
     return {
       'html': html,
       'markdown': markdown,
