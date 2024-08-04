@@ -159,8 +159,7 @@ class FlutterOlostep {
     try {
       final signedUrl =
           await _storageService.getSignedUrls(scrapeResult.recordID);
-      print(signedUrl);
-      print(scrapeResult.html);
+
       final List<Future> requests = [];
 
       if (scrapeResult.html != null) {
