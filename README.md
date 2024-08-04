@@ -19,6 +19,8 @@ dependencies:
 
 Run `flutter pub get` to install the package.
 
+When running on macos, please [configure the macOS App Sandbox](https://inappwebview.dev/docs/intro#setup-macos).
+
 ## Usage
 
 ### 1. Initialize `FlutterOlostep`

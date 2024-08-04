@@ -38,7 +38,8 @@ class DynamoService {
       ..headers["Content-Type"] = "text/plain"
       ..body = jsonEncode(bodyData);
 
-    developer.log("[updateDynamo]: Sending data to server =>");
+    developer.log(
+        "[updateDynamo]: Sending data to server => ${uploadResult.recordID}");
 
     try {
       final response = await http.Client().send(requestOptions);
