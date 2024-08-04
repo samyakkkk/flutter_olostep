@@ -45,10 +45,12 @@ class WindowsWebViewManager extends WebViewManager {
           markdown = _convertHtmlToMarkdown(html!);
         }
       }
+      final finalUrl = await _webViewController!.url.last;
 
       return {
         'html': html,
         'markdown': markdown,
+        'finalUrl': finalUrl,
       };
     } catch (e) {
       developer.log(e.toString());

@@ -6,6 +6,7 @@ class ScrapeResult {
   final String recordID;
   final Uint8List? screenshot;
   final String orgId;
+  final String? finalUrl;
 
   ScrapeResult({
     required this.recordID,
@@ -13,5 +14,6 @@ class ScrapeResult {
     this.markdown,
     this.screenshot,
     required this.orgId,
+    this.finalUrl,
   });
 }

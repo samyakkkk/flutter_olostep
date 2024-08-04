@@ -7,13 +7,14 @@ class UploadResult {
   final String url;
   final String orgId;
   final String htmlTransformer;
+  final String? finalUrl;
 
-  UploadResult({
-    required this.recordID,
-    required this.url,
-    required this.orgId,
-    this.htmlTransformer = 'none',
-  });
+  UploadResult(
+      {required this.recordID,
+      required this.url,
+      required this.orgId,
+      this.htmlTransformer = 'none',
+      this.finalUrl});
 }
 
 class DynamoService {
@@ -26,6 +27,10 @@ class DynamoService {
       "url": uploadResult.url,
       "orgId": uploadResult.orgId,
       "htmlTransformer": uploadResult.htmlTransformer,
+      "final_url": uploadResult.finalUrl,
+      "htmlFileName": "text_${uploadResult.recordID}.html",
+      "markdownFileName": "markDown_${uploadResult.recordID}.md",
+      "htmlVisualizerFileName": "image_${uploadResult.recordID}.png",
     };
 
     final requestOptions = http.Request("POST", Uri.parse(baseUrl))

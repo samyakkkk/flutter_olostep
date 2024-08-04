@@ -10,6 +10,7 @@ import 'package:flutter_olostep/src/services/s3_service.dart';
 import 'package:flutter_olostep/src/webview/macos_webview_manager.dart';
 import 'package:flutter_olostep/src/webview/webview_manager.dart';
 import 'package:flutter_olostep/src/webview/windows_webview_manager.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 /// The `FlutterOlostep` class provides methods to manage web scraping tasks
@@ -62,8 +63,17 @@ class FlutterOlostep {
   /// Starts the crawling process by establishing a WebSocket connection.
   Future<void> startCrawling() async {
     await _webViewManager.initialize();
+    final packageInfo = await PackageInfo.fromPlatform();
+    final version = packageInfo.version;
+    // flutter-macos or flutter-windows
+    final platform = Platform.operatingSystem == 'macos'
+        ? 'flutter-macos'
+        : Platform.operatingSystem == 'windows'
+            ? 'flutter-windows'
+            : 'flutter';
+
     final url =
-        'wss://7joy2r59rf.execute-api.us-east-1.amazonaws.com/production/?node_id=$_nodeId';
+        'wss://7joy2r59rf.execute-api.us-east-1.amazonaws.com/production/?node_id=$_nodeId&version=$version&platform=$platform';
     _channel = WebSocketChannel.connect(Uri.parse(url));
     _channel!.stream.listen((message) {
       print("messageReceived: $message ");
@@ -129,6 +139,7 @@ class FlutterOlostep {
         markdown: result['markdown'],
         screenshot: result['screenshot'],
         orgId: scrapeRequest.orgId,
+        finalUrl: result['finalUrl'],
       );
       return scrapeResult;
     } catch (e) {
