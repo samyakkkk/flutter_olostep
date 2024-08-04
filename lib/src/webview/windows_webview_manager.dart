@@ -1,9 +1,9 @@
 import 'dart:async';
-import 'dart:ui';
-import 'package:flutter_olostep/flutter_olostep.dart';
-import 'package:webview_windows/webview_windows.dart' as windows_webview;
-import 'package:html2md/html2md.dart' as html2md;
 import 'dart:developer' as developer;
+
+import 'package:flutter_olostep/flutter_olostep.dart';
+import 'package:html2md/html2md.dart' as html2md;
+import 'package:webview_windows/webview_windows.dart' as windows_webview;
 
 import 'webview_manager.dart';
 
@@ -41,7 +41,7 @@ class WindowsWebViewManager extends WebViewManager {
         await Future.delayed(const Duration(milliseconds: 100));
       }
 
-      await Future.delayed(Duration(seconds: request.waitBeforeScraping ?? 0));
+      await Future.delayed(Duration(seconds: request.waitBeforeScraping));
       String? html;
       String? markdown;
       if (request.saveHtml) {

@@ -1,7 +1,5 @@
 import 'dart:ui';
 
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-
 class ScrapeRequest {
   final String url;
   final int waitBeforeScraping;
@@ -15,7 +13,7 @@ class ScrapeRequest {
 
   ScrapeRequest({
     required this.url,
-    required this.waitBeforeScraping,
+    this.waitBeforeScraping = 0,
     this.htmlVisualizer,
     this.windowSize,
     required this.recordID,

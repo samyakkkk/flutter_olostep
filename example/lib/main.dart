@@ -35,7 +35,7 @@ class HtmlExtractorWidgetState extends State<HtmlExtractorWidget> {
   @override
   void initState() {
     // TODO: Enable after sucessfull test requests.
-    olostep.startCrawling();
+    // olostep.startCrawling();
 
     olostep.onScrapingResult = (result) {
       ScaffoldMessenger.of(context).showSnackBar(
