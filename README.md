@@ -46,7 +46,7 @@ final flutterOlostep = FlutterOlostep(
 
 ### 2. Start the Scraping Process
 
-Use the `startCrawling()` method to initiate the scraping process.
+Use the `start()` method to initiate the scraping process.
 
 ```dart
 await flutterOlostep.startCrawling();
@@ -63,7 +63,7 @@ final request = ScrapeRequest(
   // Additional parameters can be added here
 );
 
-await flutterOlostep.testCrawl(request);
+await flutterOlostep.test(request);
 ```
 
 ### 4. Stop the Scraping Process
@@ -71,7 +71,7 @@ await flutterOlostep.testCrawl(request);
 To terminate the scraping process, call the `stopCrawling()` method.
 
 ```dart
-await flutterOlostep.stopCrawling();
+await flutterOlostep.stop();
 ```
 
 ## Callbacks

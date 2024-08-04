@@ -35,7 +35,7 @@ class HtmlExtractorWidgetState extends State<HtmlExtractorWidget> {
   @override
   void initState() {
     // TODO: Enable after sucessfull test requests.
-    olostep.startCrawling();
+    olostep.start();
 
     olostep.onScrapingResult = (result) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -72,7 +72,10 @@ class HtmlExtractorWidgetState extends State<HtmlExtractorWidget> {
           Center(
             child: ElevatedButton(
               onPressed: () {
-                olostep.testCrawl(
+                /// Test requests to make sure the scraping and uploading works correctly
+                ///
+                /// Don't trigger after calling `start()`
+                olostep.test(
                   ScrapeRequest(
                     recordID: '005ie7h3w5',
                     url: 'https://www.olostep.com/',
@@ -92,5 +95,11 @@ class HtmlExtractorWidgetState extends State<HtmlExtractorWidget> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    olostep.stop();
+    super.dispose();
   }
 }

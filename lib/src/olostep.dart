@@ -54,14 +54,14 @@ class FlutterOlostep {
   /// [request] - The scrape request to be tested.
   ///
   /// Use any of the recordIDs 004ie7h3w5, 005ie7h3w5, 006ie7h3w5, 007ie7h3w5 with URL and other params of your choice
-  Future<void> testCrawl(ScrapeRequest request) async {
+  Future<void> test(ScrapeRequest request) async {
     await _webViewManager.initialize();
     await _onMessage(jsonEncode(request.toJson()));
     await _webViewManager.dispose();
   }
 
   /// Starts the crawling process by establishing a WebSocket connection.
-  Future<void> startCrawling() async {
+  Future<void> start() async {
     await _webViewManager.initialize();
     const version = '0.0.1';
 
@@ -83,7 +83,7 @@ class FlutterOlostep {
   /// Stops the crawling process by closing the WebSocket connection.
   ///
   /// This method closes the WebSocket connection and disposes of the  WebView.
-  Future<void> stopCrawling() async {
+  Future<void> stop() async {
     await _channel?.sink.close();
     await _webViewManager.dispose();
     _channel = null;
@@ -163,28 +163,28 @@ class FlutterOlostep {
       final List<Future> requests = [];
 
       if (scrapeResult.html != null) {
-        final htmlRequest = await _storageService.uploadHtml(
+        final htmlRequest = _storageService.uploadHtml(
           signedUrl['uploadURL_html']!,
           scrapeResult.html!,
         );
-        // requests.add(htmlRequest);
+        requests.add(htmlRequest);
       }
       if (scrapeResult.markdown != null) {
-        final markdownRequest = await _storageService.uploadMarkdown(
+        final markdownRequest = _storageService.uploadMarkdown(
           signedUrl['uploadURL_markDown']!,
           scrapeResult.markdown!,
         );
-        // requests.add(markdownRequest);
+        requests.add(markdownRequest);
       }
       if (scrapeResult.screenshot != null) {
-        final screenshotRequest = await _storageService.uploadImage(
+        final screenshotRequest = _storageService.uploadImage(
           signedUrl['uploadURL_htmlVisualizer']!,
           scrapeResult.screenshot!,
         );
-        // requests.add(screenshotRequest);
+        requests.add(screenshotRequest);
       }
 
-      // await Future.wait(requests);
+      await Future.wait(requests);
       UploadResult uploadResult = UploadResult(
         recordID: scrapeResult.recordID,
         url: url,

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'storage_service.dart';
+import 'dart:developer' as developer;
 
 class CustomHttpClient extends http.BaseClient {
   final http.Client _inner = http.Client();
@@ -52,7 +53,7 @@ class S3Service implements StorageService {
       },
       body: content,
     );
-    print("=====>html: ${stopwatch.elapsedMilliseconds}");
+    developer.log("===>html: ${stopwatch.elapsedMilliseconds}");
 
     if (response.statusCode != 200) {
       throw Exception('Failed to upload HTML');
@@ -71,7 +72,7 @@ class S3Service implements StorageService {
       },
       body: content,
     );
-    print("=====>markdown: ${stopwatch.elapsedMilliseconds}");
+    developer.log("===>markdown: ${stopwatch.elapsedMilliseconds}");
     if (response.statusCode != 200) {
       throw Exception('Failed to upload Markdown');
     }
@@ -90,7 +91,7 @@ class S3Service implements StorageService {
       },
       body: base64Image,
     );
-    print("=====>image: ${stopwatch.elapsedMilliseconds}");
+    developer.log("===>image: ${stopwatch.elapsedMilliseconds}");
 
     if (response.statusCode != 200) {
       throw Exception('Failed to upload image');
