@@ -1,10 +1,10 @@
 name: flutter_olostep
 description: "A new Flutter package project."
 version: 0.0.1
-homepage:
+# homepage:
 
 environment:
-  sdk: '>=3.2.0 <4.0.0'
+  sdk: ">=3.2.0 <4.0.0"
   flutter: ">=3.16.0"
 
 dependencies:
@@ -17,6 +17,7 @@ dependencies:
   html2md: ^1.3.2
   web_socket_channel: ^2.4.0
   http: ^1.0.0
+  package_info_plus: ^8.0.1
 
 dev_dependencies:
   flutter_test:
