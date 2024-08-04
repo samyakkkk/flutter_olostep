@@ -1,0 +1,201 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter_olostep/src/exceptions.dart';
+import 'package:flutter_olostep/src/model/scrape_request.dart';
+import 'package:flutter_olostep/src/model/scrape_result.dart';
+import 'package:flutter_olostep/src/scraping_events.dart';
+import 'package:flutter_olostep/src/services/dynamo_service.dart';
+import 'package:flutter_olostep/src/services/s3_service.dart';
+import 'package:flutter_olostep/src/webview/macos_webview_manager.dart';
+import 'package:flutter_olostep/src/webview/webview_manager.dart';
+import 'package:flutter_olostep/src/webview/windows_webview_manager.dart';
+import 'dart:developer' as developer;
+import 'package:web_socket_channel/web_socket_channel.dart';
+
+/// The `FlutterOlostep` class provides methods to manage web scraping tasks
+/// using WebView and WebSocket connections.
+class FlutterOlostep {
+  /// Creates an instance of `FlutterOlostep`.
+  ///
+  /// The [_nodeId] should be a constant specific to the device and is required to identify the node to receieve data from Olostep.
+  ///
+  /// Optional callbacks [onScrapingResult], [onScrapingException], and
+  /// [onStorageException] can be provided to handle respective events.
+  FlutterOlostep(
+    this._nodeId, {
+    this.onScrapingResult,
+    this.onScrapingException,
+    this.onStorageException,
+  }) {
+    _webViewManager = Platform.isWindows
+        ? WindowsWebViewManager()
+        : Platform.isMacOS
+            ? MacOSWebViewManager()
+            : throw Exception(
+                'Only Macos and Windows Platforms are supported.');
+  }
+
+  final String _nodeId;
+  final _storageService = S3Service();
+
+  WebSocketChannel? _channel;
+  late WebViewManager _webViewManager;
+
+  OnScrapingResult? onScrapingResult;
+  OnScrapingException? onScrapingException;
+  OnStorageException? onStorageException;
+
+  /// Tests the crawling process with a given [request].
+  ///
+  /// This method initializes the WebView, sends the [request] as a message,
+  /// and then disposes of the WebView.
+  ///
+  /// [request] - The scrape request to be tested.
+  ///
+  /// Use any of the recordIDs 004ie7h3w5, 005ie7h3w5, 006ie7h3w5, 007ie7h3w5 with URL and other params of your choice
+  Future<void> testCrawl(ScrapeRequest request) async {
+    await _webViewManager.initialize();
+    await _onMessage(jsonEncode(request.toJson()));
+    await _webViewManager.dispose();
+  }
+
+  /// Starts the crawling process by establishing a WebSocket connection.
+  Future<void> startCrawling() async {
+    await _webViewManager.initialize();
+    const version = '0.0.1';
+
+    // flutter-macos or flutter-windows
+    final platform = Platform.operatingSystem == 'macos'
+        ? 'flutter-macos'
+        : Platform.operatingSystem == 'windows'
+            ? 'flutter-windows'
+            : 'flutter';
+
+    final url =
+        'wss://7joy2r59rf.execute-api.us-east-1.amazonaws.com/production/?node_id=$_nodeId&version=$version&platform=$platform';
+    _channel = WebSocketChannel.connect(Uri.parse(url));
+    _channel!.stream.listen((message) {
+      _onMessage(message);
+    });
+  }
+
+  /// Stops the crawling process by closing the WebSocket connection.
+  ///
+  /// This method closes the WebSocket connection and disposes of the  WebView.
+  Future<void> stopCrawling() async {
+    await _channel?.sink.close();
+    await _webViewManager.dispose();
+    _channel = null;
+  }
+
+  /// Handles incoming messages from the WebSocket connection.
+  ///
+  /// This method decodes the incoming [message], processes the scrape request,
+  /// and posts the scrape result. Exceptions are handled and passed to the
+  /// respective callbacks.
+  ///
+  /// [message] - The incoming message to be processed.
+  Future<void> _onMessage(dynamic message) async {
+    try {
+      final data = jsonDecode(message);
+      final url = data['url'];
+      if (url != null) {
+        ScrapeRequest scrapeRequest = ScrapeRequest.fromJson(data);
+        ScrapeResult scrapeResult = await _runScrapeRequest(scrapeRequest);
+        final UploadResult uploadResult = await _postScrapeRequest(scrapeResult,
+            url: scrapeRequest.url,
+            htmlTransformer: scrapeRequest.htmlTransformer);
+        await DynamoService.updateDynamo(uploadResult);
+        developer.log('Scrape result posted');
+        onScrapingResult?.call(scrapeResult);
+      }
+    } on ScrapingException catch (e) {
+      onScrapingException?.call(e);
+    } on StorageException catch (e) {
+      onStorageException?.call(e);
+    } catch (e) {
+      throw Exception(e);
+    }
+  }
+
+  /// Runs the scrape request using the WebView manager.
+  ///
+  /// This method crawls the URL specified in the [scrapeRequest] and returns
+  /// the scrape result.
+  ///
+  /// [scrapeRequest] - The scrape request to be processed.
+  ///
+  /// Returns a [ScrapeResult] containing the scraped data.
+  Future<ScrapeResult> _runScrapeRequest(ScrapeRequest scrapeRequest) async {
+    try {
+      final result = await _webViewManager.crawl(scrapeRequest);
+      ScrapeResult scrapeResult = ScrapeResult(
+        recordID: scrapeRequest.recordID,
+        html: result['html'],
+        markdown: result['markdown'],
+        screenshot: result['screenshot'],
+        orgId: scrapeRequest.orgId,
+        finalUrl: result['finalUrl'],
+      );
+      return scrapeResult;
+    } catch (e) {
+      throw ScrapingException(e);
+    }
+  }
+
+  /// Posts the scrape result to the storage service.
+  ///
+  /// This method uploads the scraped HTML, markdown, and optionally the
+  /// screenshot to the storage service. The result is then passed to the
+  /// [onScrapingResult] callback.
+  ///
+  /// [scrapeResult] - The scrape result to be posted.
+  Future<UploadResult> _postScrapeRequest(
+    ScrapeResult scrapeResult, {
+    required String url,
+    required String htmlTransformer,
+  }) async {
+    try {
+      final signedUrl =
+          await _storageService.getSignedUrls(scrapeResult.recordID);
+      print(signedUrl);
+      print(scrapeResult.html);
+      final List<Future> requests = [];
+
+      if (scrapeResult.html != null) {
+        final htmlRequest = await _storageService.uploadHtml(
+          signedUrl['uploadURL_html']!,
+          scrapeResult.html!,
+        );
+        // requests.add(htmlRequest);
+      }
+      if (scrapeResult.markdown != null) {
+        final markdownRequest = await _storageService.uploadMarkdown(
+          signedUrl['uploadURL_markDown']!,
+          scrapeResult.markdown!,
+        );
+        // requests.add(markdownRequest);
+      }
+      if (scrapeResult.screenshot != null) {
+        final screenshotRequest = await _storageService.uploadImage(
+          signedUrl['uploadURL_htmlVisualizer']!,
+          scrapeResult.screenshot!,
+        );
+        // requests.add(screenshotRequest);
+      }
+
+      // await Future.wait(requests);
+      UploadResult uploadResult = UploadResult(
+        recordID: scrapeResult.recordID,
+        url: url,
+        orgId: scrapeResult.orgId,
+        htmlTransformer: htmlTransformer,
+      );
+      developer.log('requests processed');
+      return uploadResult;
+    } catch (e) {
+      throw StorageException(e);
+    }
+  }
+}
