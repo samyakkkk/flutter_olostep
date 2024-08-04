@@ -29,8 +29,14 @@ class WindowsWebViewManager extends WebViewManager {
           domContentLoaded = true;
         }
       });
- 
-      await _webViewController!.loadUrl(request.url); 
+      String finalUrl = request.url;
+      _webViewController!.url.listen(
+        (url) {
+          finalUrl = url;
+        },
+      );
+
+      await _webViewController!.loadUrl(request.url);
       while (!domContentLoaded) {
         await Future.delayed(const Duration(milliseconds: 100));
       }
@@ -41,17 +47,15 @@ class WindowsWebViewManager extends WebViewManager {
       if (request.saveHtml) {
         html = await _webViewController!
             .executeScript('document.documentElement.outerHTML');
-        if (markdown == null) {
+        if (request.saveMarkdown) {
           markdown = _convertHtmlToMarkdown(html!);
         }
       }
-      final Stream<String> finalUrlStream = _webViewController!.url;
-      final String url = await finalUrlStream.last;
 
       return {
         'html': html,
         'markdown': markdown,
-        'finalUrl': url,
+        'finalUrl': finalUrl,
       };
     } catch (e) {
       developer.log(e.toString());

@@ -23,7 +23,7 @@ class MacOSWebViewManager extends WebViewManager {
       developer.log("Page loaded: $url");
       _pageLoadCompleter?.complete();
     }, onProgressChanged: (_, int x) {
-      print("progress change : $x");
+      developer.log("progress change : $x");
     });
 
     await _headlessWebView!.run();
@@ -58,11 +58,11 @@ class MacOSWebViewManager extends WebViewManager {
 
   Future<void> _loadUrlAndWait(String url) async {
     _pageLoadCompleter = Completer<void>();
-    print('sending loadUrl Requests');
+    developer.log('sending loadUrl Requests');
     await _webViewController!.loadUrl(urlRequest: URLRequest(url: WebUri(url)));
-    print('sending loadUrl rquest sent');
+    developer.log('sending loadUrl rquest sent');
     await _pageLoadCompleter!.future;
-    print('load url future completed');
+    developer.log('load url future completed');
   }
 
   String _convertHtmlToMarkdown(String html) {

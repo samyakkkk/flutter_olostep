@@ -11,6 +11,7 @@ import 'package:flutter_olostep/src/webview/macos_webview_manager.dart';
 import 'package:flutter_olostep/src/webview/webview_manager.dart';
 import 'package:flutter_olostep/src/webview/windows_webview_manager.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'dart:developer' as developer;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 /// The `FlutterOlostep` class provides methods to manage web scraping tasks
@@ -76,7 +77,6 @@ class FlutterOlostep {
         'wss://7joy2r59rf.execute-api.us-east-1.amazonaws.com/production/?node_id=$_nodeId&version=$version&platform=$platform';
     _channel = WebSocketChannel.connect(Uri.parse(url));
     _channel!.stream.listen((message) {
-      print("messageReceived: $message ");
       _onMessage(message);
     });
   }
@@ -104,13 +104,11 @@ class FlutterOlostep {
       if (url != null) {
         ScrapeRequest scrapeRequest = ScrapeRequest.fromJson(data);
         ScrapeResult scrapeResult = await _runScrapeRequest(scrapeRequest);
-        print(scrapeRequest.toJson());
         final UploadResult uploadResult = await _postScrapeRequest(scrapeResult,
             url: scrapeRequest.url,
             htmlTransformer: scrapeRequest.htmlTransformer);
-        print(uploadResult);
         await DynamoService.updateDynamo(uploadResult);
-        print('Scrape result posted');
+        developer.log('Scrape result posted');
         onScrapingResult?.call(scrapeResult);
       }
     } on ScrapingException catch (e) {
@@ -187,14 +185,13 @@ class FlutterOlostep {
       }
 
       await Future.wait(requests);
-      print('requests sent');
       UploadResult uploadResult = UploadResult(
         recordID: scrapeResult.recordID,
         url: url,
         orgId: scrapeResult.orgId,
         htmlTransformer: htmlTransformer,
       );
-      print('requests processed');
+      developer.log('requests processed');
       return uploadResult;
     } catch (e) {
       throw StorageException(e);

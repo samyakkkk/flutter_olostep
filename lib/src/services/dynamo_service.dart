@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'dart:developer' as developer;
 
 class UploadResult {
   final String recordID;
@@ -37,14 +38,13 @@ class DynamoService {
       ..headers["Content-Type"] = "text/plain"
       ..body = jsonEncode(bodyData);
 
-    print("[updateDynamo]: Sending data to server =>");
-    print(bodyData);
+    developer.log("[updateDynamo]: Sending data to server =>");
 
     try {
       final response = await http.Client().send(requestOptions);
       if (response.statusCode == 200) {
         final data = await response.stream.bytesToString();
-        print("Response from server: $data");
+        developer.log("Response from server: $data");
       } else {
         throw Exception("Network response was not ok");
       }
